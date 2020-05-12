@@ -60,7 +60,7 @@ def createDataset():
     # named tuple for article which holds a publish time and its text
     Article = namedtuple('Article', ['publish_time', 'text'])
     print("Beginning to read metadata...")
-    with open("metadata.csv","r") as csvfile:
+    with open("metadata.csv","r", encoding="utf8") as csvfile:
         reader = csv.DictReader(csvfile)
         for article in reader:
             paper_id = article["sha"]
