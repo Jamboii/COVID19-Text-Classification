@@ -52,8 +52,46 @@ def createUnigrams(basePathTrain, basePathTest):
 
         # add probability dict for current class to probability set
         unigram_probabilities[className] = prob_dict
-    
+
     print("Conditional Class Probabilities created...")
+    return unigram_probabilities
+
+#===============================================================================================================
+
+#function to obtain unigrams of only the train sets, to be used in T4
+def createTrainUnigrams(trainPath):
+    #create unigram probs dictionary
+    unigram_probabilities = dict()
+
+    #call findParams to get vocab, length of before and after files, and word counts
+    V, N, C = findParams(trainPath)
+
+    #go through 'before' and 'after' sets in training data
+    for className in os.listdir(trainPath):
+        #make sure class is there
+        if className not in list(C.keys()):
+            continue
+
+        #obtain the count of words in that class set
+        word_freq = C[className]
+        total = N[className] # all term frequencies from training class
+        vocab = len(V) # size of vocabulary across entire dataset
+
+        #create dictionary for probability calculations
+        prob_dict = dict()
+
+        #loop through the unique words in the vocab
+        for word in V:
+            # calculate add-1 prob for word
+            freq = word_freq[word] if word in word_freq.keys() else 0 # word frequencies from all training class documents
+            prob = (freq + 1) / (total + vocab) # add-1 smoothing probability
+            # add prob to dict
+            prob_dict[word] = prob
+
+        # add probability dict for current class to probability set
+        unigram_probabilities[className] = prob_dict
+
+    #return unigram probs dictionary
     return unigram_probabilities
 
 #================================================================================================================
@@ -80,7 +118,7 @@ def findParams(basePath):
 
         # parse through each file
         print("Class: {}".format(classDir))
-        for file in os.listdir(os.path.join(basePath, classDir)): 
+        for file in os.listdir(os.path.join(basePath, classDir)):
             # article file name
             article = os.fsdecode(file)
 
@@ -114,9 +152,9 @@ def findParams(basePath):
 
 ### Test model on testing data created in T2 and compute the accuracy of the model
 # Returns a dictionary that details the percentage of correct classifications from the files in the "before" test directory
-#   and the "after" test directory 
+#   and the "after" test directory
 def predict(testPath, unigram_probabilities):
-    
+
     likelihood_prob = {"test_files_before": {}, "test_files_after": {}}
 
     classes = ["before","after"]
@@ -131,7 +169,7 @@ def predict(testPath, unigram_probabilities):
     for classDir in classes:
         # parse through each file in class directory
         for file in os.listdir(os.path.join(testPath, classDir)):
-            
+
             if classDir == "before":
                 before_count += 1
             elif classDir == "after":
@@ -140,7 +178,7 @@ def predict(testPath, unigram_probabilities):
             article = os.fsdecode(file)
             # create a predicted probability for each class 'className' for true class 'classDir'
             article_prob = dict()
-            
+
             #create prediction of each className ("before" and "after") for the current test file
             for className in classes:
                 # tokenize each article
@@ -163,7 +201,7 @@ def predict(testPath, unigram_probabilities):
                             logsum = logsum + float(math.log(test_token_prob))
                 # Create a probability for that article's class (before or after median date)
                 article_prob[className] = logsum
-            
+
             correct_class = "test_files_" + classDir
             #If logsum of this article for "before" is greater than "after", then this article is more likely to belong in "before"
             if article_prob["before"] >= article_prob["after"]:
@@ -178,12 +216,12 @@ def predict(testPath, unigram_probabilities):
     #First we will increment the classification dict as counts, and then convert to percentages afterwards
     for classification in likelihood_prob["test_files_before"].values():
         if classification == "before":
-            correct_classification_percentages["before"] += 1 
+            correct_classification_percentages["before"] += 1
     for classification in likelihood_prob["test_files_after"].values():
         if classification == "after":
             correct_classification_percentages["after"] += 1
     # print(correct_classification_percentages)
-    
+
     #Now convert to percentages:
     correct_classification_percentages["before"] = float(correct_classification_percentages["before"]) / before_count
     correct_classification_percentages["after"] = float(correct_classification_percentages["after"]) / after_count
@@ -193,14 +231,58 @@ def predict(testPath, unigram_probabilities):
 
 #================================================================================================================
 
+#function to compute the cross entropies of the before and after train sets
+#on the before and after test sets respectively
+def cross_entropy(trainPath, testPath, trainUnigrams):
+    #create list of before and after classes
+    classes = ['before', 'after']
+    #create entropies dictionary to be returned
+    entropies = dict()
+
+    #obtain vocab, length, and count of words in test sets
+    test_V, test_N, test_C = findParams(testPath)
+
+    #loop through train classes
+    for train_class in classes:
+        #loop through test classes
+        for test_class in classes:
+            #create log sum variable for each cross entropy
+            log_sum = 0.0
+            #loop through each word in test set
+            for word in test_C[test_class]:
+                #check if current word is in the training unigrams set
+                if word in train_unigrams[train_class]:
+                    #if so, get the probability of that word
+                    token_prob = train_unigrams[train_class][word]
+                    #add the log of it to log sum
+                    log_sum = log_sum + float(math.log(token_prob))
+                #otherwise, continue to the next word
+                else:
+                    continue
+                    #token_prob = 0
+                    #log_sum = log_sum + float(math.log(token_prob))
+            #create 'before-before' and other dictionary keys,
+            #then negate the value and divide it by the length of the words in the test set
+            entropies[train_class + '-' + test_class] = (log_sum * -1) / len(test_C[test_class])
+    #return the entropies dictionary
+    return entropies
+
+#==============================================================================================================
+
 if __name__ == '__main__':
     train_path = sys.argv[1]
     test_path = sys.argv[2]
     # print(train_path)
     # findParams(train_path)
     unigram_probabilities = createUnigrams(train_path, test_path)
-    # print(unigram_probabilities)
+    train_unigrams = createTrainUnigrams(train_path)
+    print("Unigram probabilities of the training sets: ")
+    #print(train_unigrams)
     correct_classification_percentages = predict(test_path, unigram_probabilities)
+    entropies = cross_entropy(train_path, test_path, train_unigrams)
     print("The percentage of the \"before\" test files that were correctly predicted as \"before\": " + str(correct_classification_percentages["before"]))
     print("The percentage of the \"after\" test files that were correctly predicted as \"after\": " + str(correct_classification_percentages["after"]))
-    
+    print("Cross entropy of beforeTrain on beforeTest: " + str(entropies['before-before']))
+    print("Cross entropy of beforeTrain on afterTest: " + str(entropies['before-after']))
+    print("Cross entropy of afterTrain on beforeTest: " + str(entropies['after-before']))
+    print("Cross entropy of afterTrain on afterTest: " + str(entropies['after-after']))
