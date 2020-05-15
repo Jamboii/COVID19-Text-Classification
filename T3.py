@@ -198,7 +198,7 @@ def predict(testPath, unigram_probabilities):
                             # print(test_token_prob)
                             # Add onto a score???? for the article's class
                             # print(float(math.log(test_token_prob)))
-                            logsum = logsum + float(math.log(test_token_prob))
+                            logsum += float(math.log(test_token_prob))
                 # Create a probability for that article's class (before or after median date)
                 article_prob[className] = logsum
 
@@ -255,7 +255,7 @@ def cross_entropy(trainPath, testPath, trainUnigrams):
                     #if so, get the probability of that word
                     token_prob = train_unigrams[train_class][word]
                     #add the log of it to log sum
-                    log_sum = log_sum + float(math.log(token_prob))
+                    log_sum += (float(math.log(token_prob)) * test_C[test_class][word])
                 #otherwise, continue to the next word
                 else:
                     continue
@@ -263,7 +263,7 @@ def cross_entropy(trainPath, testPath, trainUnigrams):
                     #log_sum = log_sum + float(math.log(token_prob))
             #create 'before-before' and other dictionary keys,
             #then negate the value and divide it by the length of the words in the test set
-            entropies[train_class + '-' + test_class] = (log_sum * -1) / len(test_C[test_class])
+            entropies[train_class + '-' + test_class] = (log_sum * -1) / test_N[test_class]
     #return the entropies dictionary
     return entropies
 
