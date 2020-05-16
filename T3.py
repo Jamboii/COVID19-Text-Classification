@@ -200,6 +200,7 @@ def predict(testPath, unigram_probabilities):
                             # print(float(math.log(test_token_prob)))
                             logsum += float(math.log(test_token_prob))
                 # Create a probability for that article's class (before or after median date)
+                logsum += math.log(0.5)
                 article_prob[className] = logsum
 
             correct_class = "test_files_" + classDir
