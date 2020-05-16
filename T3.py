@@ -20,6 +20,7 @@ from collections import namedtuple, Counter
 #First parameter is the path to the training directory, and second parameter is the path to the test directory
 def createUnigrams(basePathTrain, basePathTest):
     ### Create Naive Bayes Text Classification with Add-1 smoothing for each class
+    print("Creating Naive Bayes Text Classification models...\n")
 
     unigram_probabilities = dict()
 
@@ -54,12 +55,15 @@ def createUnigrams(basePathTrain, basePathTest):
         unigram_probabilities[className] = prob_dict
 
     print("Conditional Class Probabilities created...")
+    print("--------------------------------------------------")
     return unigram_probabilities
 
 #===============================================================================================================
 
 #function to obtain unigrams of only the train sets, to be used in T4
 def createTrainUnigrams(trainPath):
+    print("Creating unigram models for training data...\n")
+
     #create unigram probs dictionary
     unigram_probabilities = dict()
 
@@ -146,6 +150,7 @@ def findParams(basePath):
         C[classDir] = C_class
 
     print("Calculations created...")
+    print("--------------------------------------------------")
     return V, N, C
 
 #================================================================================================================
@@ -240,6 +245,8 @@ def cross_entropy(trainPath, testPath, trainUnigrams):
     #create entropies dictionary to be returned
     entropies = dict()
 
+    print("Calculating cross-entopies of test data against training models...\n")
+
     #obtain vocab, length, and count of words in test sets
     test_V, test_N, test_C = findParams(testPath)
 
@@ -283,6 +290,7 @@ if __name__ == '__main__':
     entropies = cross_entropy(train_path, test_path, train_unigrams)
     print("The percentage of the \"before\" test files that were correctly predicted as \"before\": " + str(correct_classification_percentages["before"]))
     print("The percentage of the \"after\" test files that were correctly predicted as \"after\": " + str(correct_classification_percentages["after"]))
+    print("--------------------------------------------------")
     print("Cross entropy of beforeTrain on beforeTest: " + str(entropies['before-before']))
     print("Cross entropy of beforeTrain on afterTest: " + str(entropies['before-after']))
     print("Cross entropy of afterTrain on beforeTest: " + str(entropies['after-before']))
