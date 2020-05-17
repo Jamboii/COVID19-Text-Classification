@@ -1,6 +1,7 @@
 import json
 import json
 import csv
+import sys
 import os
 import random
 import math
@@ -10,33 +11,49 @@ from collections import namedtuple, Counter
 # T2 Deliverable
 # Assuming dataset is downloaded, open each json and extract text data
 # Assuming metadata is downloaded, open and extract publish time per json article
-def createDataset():
-
-    # Create training and test folder directories
-    trainBeforePath = "train/before"
-    trainAfterPath  = "train/after"
-    testBeforePath  = "test/before"
-    testAfterPath   = "test/after"
-
-    if not os.path.exists(trainBeforePath):
-        os.makedirs(trainBeforePath)
-    if not os.path.exists(trainAfterPath):
-        os.makedirs(trainAfterPath)
-    if not os.path.exists(testBeforePath):
-        os.makedirs(testBeforePath)
-    if not os.path.exists(testAfterPath):
-        os.makedirs(testAfterPath)
+def createDataset(datasetDir, metadataPath, basePath):
 
     ### Place all publish_time dates into sorted order (earliest -> latest)
-    dataset_dir = "./biorxiv_medrxiv/pdf_json"
     dataset_list = []
-    for filename in os.listdir(dataset_dir):
+    for filename in os.listdir(datasetDir):
         if filename.endswith(".json"):
-            path = os.path.join(dataset_dir, filename)
+            path = os.path.join(datasetDir, filename)
             # print(path)
             dataset_list.append(path)
         else:
             continue
+
+    # failsafe for if no json files were found
+    if len(dataset_list) == 0:
+        print("ERROR: No json files found in {}.".format(datasetDir))
+        exit()
+
+    # Create training and test folder directories
+    trainBeforePath = basePath + "train/before"
+    trainAfterPath  = basePath + "train/after"
+    testBeforePath  = basePath + "test/before"
+    testAfterPath   = basePath + "test/after"
+
+    exceptPath = None
+
+    if os.path.exists(trainBeforePath):
+        exceptPath = trainBeforePath
+    if os.path.exists(trainAfterPath):
+        exceptPath = trainAfterPath
+    if os.path.exists(testBeforePath):
+        exceptPath = testBeforePath
+    if os.path.exists(testAfterPath):
+        exceptPath = testAfterPath
+
+    # Failsafe against already present directories, make sure they're deleted
+    if exceptPath:
+        print("Directory {} already exists. Please delete the directory before running this script.".format(exceptPath))
+        exit()
+
+    os.makedirs(trainBeforePath)
+    os.makedirs(trainAfterPath)
+    os.makedirs(testBeforePath)
+    os.makedirs(testAfterPath)
 
     # holds text per paper id
     paperId_text = {}
@@ -60,7 +77,7 @@ def createDataset():
     # named tuple for article which holds a publish time and its text
     Article = namedtuple('Article', ['publish_time', 'text'])
     print("Beginning to read metadata...")
-    with open("metadata.csv","r", encoding="utf8") as csvfile:
+    with open(metadataPath,"r", encoding="utf8") as csvfile:
         reader = csv.DictReader(csvfile)
         for article in reader:
             paper_id = article["sha"]
@@ -154,4 +171,8 @@ def createDataset():
         ftrain.close()
     print("Finished exporting 'after' test text...")
 
-createDataset()
+if __name__ == '__main__':
+    datasetDir = sys.argv[1]
+    metadataPath = sys.argv[2]
+    basePath = sys.argv[3]
+    createDataset(datasetDir, metadataPath, basePath)
