@@ -1,0 +1,25 @@
+-----------------------------------------
+Naive Bayes Text Classification Analysis
+-----------------------------------------
+
+The following were the results obtained for the accuracy of the model created in T3:
+
+The percentage of the "before" test files that were correctly predicted as "before": 0.5263157894736842
+The percentage of the "after" test files that were correctly predicted as "after": 0.8270676691729323
+
+There is a very large discrepancy between the accuracy of the model on articles of category “published before medianDate” versus “published after medianDate.” The reason for this gap in accuracy is more than likely due to the publish date of the articles in each category. The articles in the CORD-19 dataset date back to January 2014. However, there were a very low amount of articles published every year in comparison to 2020. It is for this reason that the median date that we’re separating both categories by was calculated to be April 1, 2020. This means that there exists the same amount of articles written in a 6 year timespan (beforeSet) as the amount of articles written in a 1 month timespan (afterSet). Thus, the article density of the beforeSet is much lower than that of the afterSet.
+This is a valuable metric to take as we can infer that many of the texts written in the afterSet likely revolve around the same exact topic area. This creates a generalization for an article that belongs in the afterSet, allowing the model to make more accurate predictions. The articles in the beforeSet, being written years apart from each other, are less likely to have this same text generalization, and even include some recent articles from 2020. Without a proper generalization of word frequencies, the model is subject to confusion as to what articles really belong as part of the “published before medianDate” category. 
+Furthermore, it’s worth noting that this method only used the unigrams of the data, which is a simple method for prediction. If we instead used bigrams, trigrams, or other custom methods, we most likely would have gotten better models and better results. Of course, this is generally more difficult to code and more time consuming to run, so for the sake of this project, we were unable to incorporate such methods.
+
+-----------------------------------------
+Cross Entropy Experiment Analysis
+-----------------------------------------
+
+The following were the cross entropy results obtained using unigram language models trained on the separated CORD-19 training data:
+
+Cross entropy of beforeTrain on beforeTest: 10.246188334382989
+Cross entropy of beforeTrain on afterTest: 10.145328659045125
+Cross entropy of afterTrain on beforeTest: 10.21304529346095
+Cross entropy of afterTrain on afterTest: 9.990291277611606
+
+The cross entropy results here are definitely peculiar. If the model generalized well, we would assume that the cross entropy of that model on similar data (e.g. afterTrain on afterTest) would be a lot smaller than on different data. We can see that this is true for the afterTrain model, where the cross entropy on similar test data (afterTest) calculated to be slightly smaller than that of the beforeTest article data. However, the same cannot be said for the beforeTrain model. Perhaps for reasons similar to those discussed in the Naive Text Classification analysis, the cross entropy on the beforeTest data is shown to be slightly larger than afterTest’s. With more bits needed to encompass the probabilities of the beforeTest data, it’s possible to conclude that the beforeTrain model did not generalize well enough on the articles it was given. In future experimentation, the cross entropy results could be lowered by utilizing a bigram or trigram model instead.

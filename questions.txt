@@ -1,0 +1,32 @@
+Joe Candiano, Alex Benasutti, Mike Knothe
+D4 Questions
+
+--------------------------------------------
+What was easy about this assignment?
+--------------------------------------------
+
+This assignment was easy in the aspect of creating the train and test sets since we have done that in previous projects, along with obtaining the unigrams and vocabulary for use in T3. A lot of the code used in Project 4 in particular was reused for the purposes of this project.
+
+--------------------------------------------
+What was challenging about this assignment?
+--------------------------------------------
+
+The most challenging, maybe more time-consuming, part of this assignment was fully understanding the JSON format of the files and extracting exactly what we needed for the project. Within each JSON file for each article are many different attributes containing different types of data. Ultimately, we needed to extract both the paper id and all text data, the latter of which was difficult to parse for considering where the text data was held in the file. In the end we chose to take all text data in the “abstract” and “body_text” sections to use when creating models for Naive Bayes classification.
+
+--------------------------------------------
+What did you like about this assignment?
+--------------------------------------------
+
+We liked the fact that we got to implement a Naive-Bayes text classifier using the “Bag of Words” representation, we worked with doing cross entropies on multiple train and test sets, and got more familiar with the JSON format that is widely used.
+
+--------------------------------------------
+What did you dislike about this assignment?
+--------------------------------------------
+
+Overall, this assignment was a great learning experience for learning how to implement a Naive Bayes classifier. However, there was an ambiguity of Task 3 that made it unnecessarily difficult to complete. It took an abhorrent amount of time to understand that we needed to use the log sum of the probabilities of each word in the test data in order to compute the accuracy of our model. We originally believed that we needed to calculate some sort of accuracy metric for each article, and average them together. In reality, just calculating the log sum and taking the average “correctness” was enough to suffice.
+
+--------------------------------------------
+What did you learn from this assignment?
+--------------------------------------------
+
+What we learned from this assignment was a more hands-on approach to a Naive-Bayes text classifier and the concept of cross entropy. We also all gained more experience in Python and using some of the built-in libraries to parse data, such as “json” and “csv.”
