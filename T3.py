@@ -150,7 +150,7 @@ def findParams(basePath):
         C[classDir] = C_class
 
     print("Calculations created...")
-    print("--------------------------------------------------")
+    print("-----------------------")
     return V, N, C
 
 #================================================================================================================
@@ -205,7 +205,7 @@ def predict(testPath, unigram_probabilities):
                             # print(float(math.log(test_token_prob)))
                             logsum += float(math.log(test_token_prob))
                 # Create a probability for that article's class (before or after median date)
-                logsum += math.log(0.5)
+                logsum += math.log(0.5, 2)
                 article_prob[className] = logsum
 
             correct_class = "test_files_" + classDir
@@ -262,8 +262,8 @@ def cross_entropy(trainPath, testPath, trainUnigrams):
                 if word in train_unigrams[train_class]:
                     #if so, get the probability of that word
                     token_prob = train_unigrams[train_class][word]
-                    #add the log of it to log sum
-                    log_sum += (float(math.log(token_prob)) * test_C[test_class][word])
+                    #add the log of it * its frequency to log sum
+                    log_sum += (float(math.log(token_prob,2)) * test_C[test_class][word])
                 #otherwise, continue to the next word
                 else:
                     continue
@@ -271,7 +271,7 @@ def cross_entropy(trainPath, testPath, trainUnigrams):
                     #log_sum = log_sum + float(math.log(token_prob))
             #create 'before-before' and other dictionary keys,
             #then negate the value and divide it by the length of the words in the test set
-            entropies[train_class + '-' + test_class] = (log_sum * -1) / test_N[test_class]
+            entropies[train_class + '-' + test_class] = log_sum * (-1 / test_N[test_class])
     #return the entropies dictionary
     return entropies
 
@@ -284,7 +284,7 @@ if __name__ == '__main__':
     # findParams(train_path)
     unigram_probabilities = createUnigrams(train_path, test_path)
     train_unigrams = createTrainUnigrams(train_path)
-    print("Unigram probabilities of the training sets: ")
+    # print("Unigram probabilities of the training sets: ")
     #print(train_unigrams)
     correct_classification_percentages = predict(test_path, unigram_probabilities)
     entropies = cross_entropy(train_path, test_path, train_unigrams)
